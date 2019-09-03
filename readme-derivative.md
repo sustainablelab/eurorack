@@ -1,5 +1,54 @@
 Derivative Work by Curry Goat Tea House
 
+# Module builds in the USA
+I am not changing the design. I simply wish to fab the boards by my usual flow
+in the US and using parts available in the US. There changes are minor but
+tedious. I hope to save others from repeating this effort.
+
+These are minor changes to repo `github.com/pichenettes/eurorack.git`. The
+changes allow me to build a similar module in the USA using a prototyping
+turnkey service, either *MacroFab* or *PCB:NG*. For front panels, I either set
+up files for laser cutting, or I order a bare PCB from *OSHPARK*.
+
+The `pichenettes` design is for build in Europe. There are some BOM items
+unavailable in the USA. Also, my PCB fab has different requirements from the fab
+used by `pichenettes`. And my PCB assembly service only does surface mount. I
+assemble the through-hole parts myself.
+
+The purpose of the derivative work is a USA-compatible version. I only change
+the PCB files and BOM files. I add my own PCB manufacturing files, and
+supplement the front panel files with design files for laser cutter or PCB fab,
+because I have access to these manufacturing services for prototyping
+quantities.
+
+I do not change the firmware. I do my best to keep this fork up to date with the
+original `pichenettes` repo so that it always has the latest firmware.
+
+## Stay up to date with design at `pichenettes`
+I use Git to stay up to date. This is how the remotes are set up in my local
+clone:
+
+```bash
+$ git remote -v
+origin	https://github.com/sustainablelab/eurorack (fetch)
+origin	https://github.com/sustainablelab/eurorack (push)
+upstream	https://github.com/pichenettes/eurorack.git (fetch)
+upstream	https://github.com/pichenettes/eurorack.git (push)
+```
+
+I sync to `pichenettes`:
+```bash
+git pull upstream master
+```
+
+And I push all derivative work to my fork. My fork is the remote repo you are
+looking at now.
+
+```bash
+$ git push
+```
+
+
 # Boring repo additions
 ## EAGLE Project for latest work state
 - [x] add an EAGLE project to the `eurorack` repo to store EAGLE state
