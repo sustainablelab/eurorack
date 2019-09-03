@@ -1,15 +1,23 @@
-Derivative Work by Goat Curry
+Derivative Work by Curry Goat Tea House
 
-# EAGLE Project
-I added an EAGLE project to the `eurorack` repo. The purpose is to save the
-state of the working environment for the last PCB I was working with in the
-`eurorack` repo. It lowers the friction in switching between `eurorack` work and
-my day-job work.
+# Boring repo additions
+## EAGLE Project for latest work state
+- [x] add an EAGLE project to the `eurorack` repo to store EAGLE state
+
+The EAGLE project purpose is to save the state of the working environment for
+the last PCB I was working with in the `eurorack` repo. It lowers the friction
+in switching between `eurorack` work and my day-job work.
 
 For example, if I am looking at the `shades` schematic and board files, I close
 the project, not the files. Then when I reopen the project, those files open up.
 Similarly, whatever libraries are active are reactivated, the grid settings in
 the board file are loaded, etc.
+
+## Private folder for invoices and receipts
+- [x] add `_private`
+
+`_private` holds paperwork no one else would be interested in: invoices and
+receipts for parts orders and PCB orders.
 
 # Price Module Builds
 I use PCB:NG in Brooklyn. They are professional, have a quick turn time, and are
@@ -30,28 +38,130 @@ same as buying the module new. In addition:
 - I still need to solder the through-hole parts by hand
 - I have to deal with procuring the 3.5mm jack that matches the PCB footprint
 
+# Eurorack module design
+The Eurorack standard comes from the Eurorack card standard for inserting PCB
+cards into a rack-mounted backplane. Eurorack eliminates a lot of the
+requirements to reduce the module COGs (cost of goods). The power supply bus
+cabling replaces the backplane. It is a defacto standard. Much of Eurorack is a
+defacto standard. You won't find a single-answer for compatibility. Just look at
+popular modules. Since Mutable Instruments is open-source, and derivative
+modules are open-source, I use this as my reference. I also have a Moog case
+that I take measurements from.
+
 ## Jacks
-This took me by surprise. There are *many* 3.5mm mono jacks that solders to a
-PCB. The PCB footprint must match whatever jack I procure. Even more surprising,
-very few of these are available in the US. In fact, none of the ones used in
-Eurorack designs are available from the usual US vendors (Mouser, Digi-Key,
-Newark, etc.). Instead, it seems all of the threaded 3.5mm jacks are
-right-angle. Many of these are confusingly labeled *vertical*, but they are also
-right-angle (the *vertical* is not in the dimension required by the Eurorack
-build).
+This took me by surprise. Jacks are in no way standardized. The PCB footprint
+for the jack in a module design *must* match the specific jack if the jack pins
+solder directly to the PCB. So, jacks. Here we go.
 
-Also, the jacks take a lot of abuse, so they must be attached to the front
-panel via a threaded nut. If an SMT threaded vertical jack exists, I'll try it,
-but it sounds exotic. I'd like to try doing an entirely surface mount design. I
-cannot find anything like this, not even from QingPu.
+### Background
+Jacks come with different diameters, mono or stereo, switched or unswitched, and
+panel mounted (solder wires to the jack pins) or PCB mounted (jack pins solder
+direct to the PCB).
 
+The typical Eurorack jack is a 3.5mm, mono, switched, PCB-mounted jack.
+Most Eurorack modules mount the PCB parallel to the front panel, so the jack
+pins are axial with the jack.
+
+### function of the three pins on a switched mono jack
+The three pins are tip, sleeve, and a normally-close (N/C) switch.
+
+The two important pins are sleeve and tip. These carry the signal on the audio
+cable. Sleeve ties to a 0V reference in the circuit. Tip is the signal input or
+output.
+
+The switch pin functionality depends on the module. Normally-closed means the
+switch pin shorts to the tip when no cable is inserted and opens when a cable is
+inserted. There's a surprising number of clever ways to use such switch action.
+Here are three examples from Mutable Instruments.
+
+### switch pin usage examples from Mutable Instruments
+
+#### Elements
+- all the jacks on Elements do not use the switch connection
+- the switch pin is left unconnected
+
+#### Ears
+- the sleeve pin connects to a `0V` reference
+- the piezeo element is a two-terminal device
+    - one terminal ties to the `0V` reference
+- the switch pin connects to the other terminal of the piezo element
+- when nothing is plugged into the jack, the switch pin shorts to the tip pin,
+  so the piezo element connects to the input stage
+- when a device is plugged in, the switch pin opens and the piezo element is no
+  longer connected to the input stage
+
+#### Shades
+- all the jacks on Shades use the switch connection
+- the default reference to the jack inputs is `0V`
+- the switch pin, in conjunction with the three-pin header, provides an
+  alternative default reference to the jack inputs of either `+5V` or `+10V`
+- design:
+    - tie the switch to the middle pin of a three-pin header
+    - the outer pins are voltage references
+    - the three-pin header is not accessible via the front panel
+    - the user puts a jumper on the three-pin header prior to installing the
+      module in their eurorack
+    - the jumper ties the `switch` pin to either `+5V` or `+10V`
+    - so the input to the jack can default to `+5V` or `+10V`
+    - removing the jumper results in defaulting to `0V` because the op-amp
+      is in a negative feedback configuration:
+        - non-inverting terminal is tied to a `0V` reference
+        - therefore the inverting terminal is driven to `0V`
+        - the jack tip pin is connects to the inverting terminal via the
+          the `10kΩ` pot and the `100kΩ` resistor
+
+
+### Threaded
+The jacks take a lot of abuse, so they must be attached to the front panel via a
+threaded nut. Otherwise the constant plugging and unplugging of patch cables
+could damage the jack solder joints or the stress could transfer to the PCB the
+jack is mounted on.
+
+This threaded nut requirement is peculiar to Eurorack. Headphone and USB jacks
+on regular consumer electronics have a similar concern, and those are only PCB
+mounted, and surface mount at that! But the stress in a Eurorack and the
+reliability demands are greater. Jacks in consumer electronics are almost
+always at a right angle to the PCB, so plugging a cable does not transfer the
+stress to the PCB. And to protect the solder joint of the jack, there is usually
+a pair of mounting pins that constrain the jack position on the PCB. Eurorack
+usually requires the PCB and front panel planes to be parallel, and the number
+of plugging/unplugging cycles is *much* higher. And unlike a consumer headphone
+jack, once a Eurorack module jack starts to go, the module is unusable.
+
+### Beware of variety and availability
+- there are *many* 3.5mm mono jacks that solder to a PCB
+- as of this 2019 writing, *none* of the ones used in Eurorack designs are
+  available from the usual US vendors (Mouser, Digi-Key, Newark, etc.)!
+- in the US, *all* of the threaded 3.5mm jacks are right-angle
+    - many of these are confusingly labeled *vertical*
+    - the *vertical* does not refer to the dimension required by the Eurorack
+      build
+        - the pins are *not* axial with the jack
+        - the pins are still at a right-angle to the jack
+    - so these *vertical* jacks are essentially also right-angle
+- hence, I am motivated to investigate designs with the PCB perpendicular to the
+  front panel
+
+### OK to substitute a mono jack with a stereo jack
 Stereo jacks are OK too. On a stereo jack, in addition to the sleeve and tip
 there is a ring pin. Leave the ring pin not connected.
 
 The ring pin shorts to the sleeve pin when a mono plug is inserted into a stereo
 jack. The ring pin floats when unplugged.
 
-Here is the Mouser page with the most likely candidates:
+So, for example, to reduce part count and possibility for jack mix-up during
+assembly, a stereo-to-mono breakout can use *all* stereo jacks. The stereo jacks
+acting as mono jacks become mono simply based on the PCB traces.
+
+### Jacks on Mouser for perpendicular-pcb
+Here is the Mouser page with the Switchcraft 35RAPC family of jacks:
+<https://www.mouser.com/Switchcraft/Connectors/Audio-Video-Connectors/Phone-Connectors/35RAPC-Series/_/N-778cv?P=1yxikmxZ1z0zp7j>
+
+Select a suitable stereo jack from this list and make a stereo-to-mono breakout
+with it.
+
+### Jacks on Mouser for parallel-pcb
+Here is the Mouser page with the most likely candidates for Eurorack-style jacks
 
 <https://www.mouser.com/Connectors/Audio-Video-Connectors/Phone-Connectors/_/N-778cv?P=1z0yy6bZ1yzsf9eZ1yzrk55Z1yzrwr8Z1yzowym>
 
@@ -110,7 +220,7 @@ close together are the sleeve and switch. The sleeve pin is the one that
 sticks out the side of the jack. QingPu bends this pin down so that it runs down
 to the PCB like the other two pins. The pin farthest away is the tip.
 
-### Procurement
+### Procurement of Eurorack jacks
 Procuring the jacks sucks. Options are attempting to buy direct from China, or
 procuring from a vendor in Europe.
 
@@ -120,52 +230,39 @@ procuring from a vendor in Europe.
 - buy from the Thonkiconn in the UK:
 <https://www.thonk.co.uk/shop/thonkiconn/>
 
-### function of the three pins
-The three pins are tip, sleeve, and a normally-close (N/C) switch.
-
-The two important pins are sleeve and tip. These carry the signal on the audio
-cable. Sleeve ties to a 0V reference in the circuit. Tip is the signal input or
-output.
-
-The switch pin functionality depends on the module.
-Normally-closed means the switch pin shorts to the tip when no cable is inserted
-and opens when a cable is inserted.
-
-### switch pin usage examples
-
-#### Elements
-- all the jacks on Elements do not use the switch connection
-- the switch pin is left unconnected
-
-#### Ears
-- the sleeve pin connects to a `0V` reference
-- the piezeo element is a two-terminal device
-    - one terminal ties to the `0V` reference
-- the switch pin connects to the other terminal of the piezo element
-- when nothing is plugged into the jack, the switch pin shorts to the tip pin,
-  so the piezo element connects to the input stage
-- when a device is plugged in, the switch pin opens and the piezo element is no
-  longer connected to the input stage
-
-#### Shades
-- all the jacks on Shades use the switch connection
-- the default reference to the jack inputs is `0V`
-- the switch pin, in conjunction with the three-pin header, provides an
-  alternative default reference to the jack inputs of either `+5V` or `+10V`
-- design:
-    - tie the switch to the middle pin of a three-pin header
-    - the outer pins are voltage references
-    - the three-pin header is not accessible via the front panel
-    - the user puts a jumper on the three-pin header prior to installing the
-      module in their eurorack
-    - the jumper ties the `switch` pin to either `+5V` or `+10V`
-    - so the input to the jack can default to `+5V` or `+10V`
-    - removing the jumper results in defaulting to `0V` because the op-amp
-      is in a negative feedback configuration:
-        - non-inverting terminal is tied to a `0V` reference
-        - therefore the inverting terminal is driven to `0V`
-        - the jack tip pin is connects to the inverting terminal via the
-          the `10kΩ` pot and the `100kΩ` resistor
+## Jack options for modules with perpendicular PCBs
+- [ ] explore jack options for PCBs perpendicular to the front panel
+    - this orientation works on small PCBs
+    - what is the maximum depth the PCB can protude into the case?
+    - small PCBs are simple *glue* modules (stereo-to-mono, transducer
+      amplifiers, attenuators, mixers, one-to-many breakouts, gate manipulation)
+    - on these designs, a right-angle jack is fine
+    - the restriction on the type of module this works with is that, unless the
+      jacks are panel mount, the panel is restricted to a single column of
+      *everything*, so the front panel design must work as a narrow vertical
+      layout
+    - start with the stereo-to-mono design
+- [ ] design a PCB that takes a stereo input and splits it into two mono
+  outputs
+    - use jacks for right-angle
+    - should I:
+        - duplicate the design as much as possible along the height of the PCB?
+        - or add a second design to this module?
+    - design a PCB as the front panel
+    - include artwork to indicate:
+        - which three jacks belong together
+        - which ears are stereo/mono
+    - [ ] what are the physical dimension requirements for the front panel
+    - [ ] what is the maximum width (case depth) for the module PCB?
+    - [ ] identify the jacks to use
+        - do not use the straight mono jacks purchased from Master Electronics
+        - the whole point is this design gets away with the typical USA jacks
+        - also, maybe I can even go completely surface mount on this, in which
+          case the jack does not need to be threaded, but it should have
+          mounting pins to constrain it in the plane of the PCB
+            - If an SMT threaded vertical jack exists, I'll try it, but it
+              sounds exotic. I cannot find anything like this, not even from
+              QingPu. So an SMT jack is *not* going to be threaded
 
 ## Price a PCB at MacroFab
 - upload `.brd` file
